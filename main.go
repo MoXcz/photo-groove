@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"encoding/json"
 	"log/slog"
 	"net/http"
 	"os"
@@ -24,16 +24,37 @@ func main() {
 	err := srv.ListenAndServe()
 	if err != nil {
 		logger.Error("Server failed to start", "error", err)
-		return
+		os.Exit(1)
 	}
 }
 
-type Photos struct {
-	List []string `json:"photos"`
+type Photo struct {
+	Url   string `json:"url"`
+	Size  int    `json:"size"`
+	Title string `json:"title,omitempty"`
 }
 
 func (app *application) photos(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "1.jpeg,2.jpeg,3.jpeg,4.jpeg")
+	photos := []Photo{
+		{Url: "1.jpeg", Size: 36, Title: "Beachside"},
+		{Url: "2.jpeg", Size: 19, Title: "Epica, live at the Agora"},
+		{Url: "3.jpeg", Size: 41},
+		{Url: "4.jpeg", Size: 41, Title: "City Museum"},
+		{Url: "5.jpeg", Size: 25, Title: ""},
+		{Url: "6.jpeg", Size: 37, Title: "Boat in Glass"},
+	}
+
+	app.respJSON(w, http.StatusOK, photos)
+}
+
+func (app *application) respJSON(w http.ResponseWriter, code int, jsonResp any) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	data, err := json.Marshal(jsonResp)
+	if err != nil {
+		app.logger.Error("Error marshalling JSON", "err", err)
+	}
+	w.Write(data)
 }
 
 func (app *application) routes() http.Handler {

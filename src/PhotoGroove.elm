@@ -2,9 +2,11 @@ module PhotoGroove exposing (main)
 
 import Browser
 import Html exposing (..)
-import Html.Attributes exposing (..)
+import Html.Attributes exposing (class, classList, id, name, src, title, type_)
 import Html.Events exposing (onClick)
 import Http
+import Json.Decode exposing (Decoder, int, list, string, succeed)
+import Json.Decode.Pipeline exposing (optional, required)
 import Random
 
 
@@ -17,12 +19,23 @@ initialCmd : Cmd Msg
 initialCmd =
     Http.get
         { url = "http://localhost:8080/photos/list"
-        , expect = Http.expectString GotPhotos
+        , expect = Http.expectJson GotPhotos (list photoDecoder)
         }
 
 
 type alias Photo =
-    { url : String }
+    { url : String
+    , size : Int
+    , title : String
+    }
+
+
+photoDecoder : Decoder Photo
+photoDecoder =
+    succeed Photo
+        |> required "url" string
+        |> required "size" int
+        |> optional "title" string "(untitled)"
 
 
 type Status
@@ -48,7 +61,7 @@ type Msg
     | ClickedSize ThumnailSize
     | ClickedSurpriseMe
     | GotRandomPhoto Photo
-    | GotPhotos (Result Http.Error String)
+    | GotPhotos (Result Http.Error (List Photo))
 
 
 view : Model -> Html Msg
@@ -90,6 +103,7 @@ viewThumbnail : String -> Photo -> Html Msg
 viewThumbnail selectedUrl thumb =
     img
         [ src (urlPrefix ++ thumb.url)
+        , title (thumb.title ++ " [" ++ String.fromInt thumb.size ++ " KB")
         , classList [ ( "selected", selectedUrl == thumb.url ) ]
         , onClick (ClickedPhoto thumb.url)
         ]
@@ -139,6 +153,7 @@ initialModel =
 
 selectUrl : String -> Status -> Status
 selectUrl url status =
+    -- case statements are exhaustive
     case status of
         Loaded photos _ ->
             Loaded photos url
@@ -164,9 +179,11 @@ update msg model =
 
         ClickedSurpriseMe ->
             case model.status of
+                -- this handles the case when the list is empty
                 Loaded [] _ ->
                     ( model, Cmd.none )
 
+                -- and this one when it's not empty
                 Loaded (firstPhoto :: otherPhotos) _ ->
                     Random.uniform firstPhoto otherPhotos
                         |> Random.generate GotRandomPhoto
@@ -178,14 +195,13 @@ update msg model =
                 Errored _ ->
                     ( model, Cmd.none )
 
-        GotPhotos (Ok responseStr) ->
-            case String.split "," responseStr of
-                (firstUrl :: _) as urls ->
-                    let
-                        photos =
-                            List.map Photo urls
-                    in
-                    ( { model | status = Loaded photos firstUrl }, Cmd.none )
+        -- pattern matching for Result value (either Ok or Err)
+        GotPhotos (Ok photos) ->
+            case photos of
+                first :: rest ->
+                    ( { model | status = Loaded rest first.url }
+                    , Cmd.none
+                    )
 
                 [] ->
                     ( { model | status = Errored "0 photos found" }, Cmd.none )
