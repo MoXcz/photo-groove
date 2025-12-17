@@ -1,5 +1,11 @@
 # photo-groove
 
 ```sh
-elm make src/PhotoGroove.elm --output ./static/app.js
+git clone github.com/MoXcz/photo-groove
+cd photo-groove
+
+make web
+make server
 ```
+
+Visit `localhost:8080`.
