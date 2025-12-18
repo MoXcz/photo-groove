@@ -1,4 +1,4 @@
-port module PhotoGroove exposing (..)
+port module PhotoGroove exposing (Model, Msg(..), Status(..), initialModel, photoDecoder, photoFromUrl, update, urlPrefix, view)
 
 -- modules that interact with JS need to be marked with 'port'
 
@@ -334,3 +334,7 @@ onSlide toMsg =
     at [ "detail", "userSlidTo" ] int
         |> Json.Decode.map toMsg
         |> on "slide"
+
+
+photoFromUrl url =
+    { url = url, size = 0, title = "" }
