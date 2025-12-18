@@ -44,6 +44,7 @@
   <script>
     let app = Elm.PhotoGroove.init({
       node: document.getElementById("app"),
+      // this values gets passed to elm 'init' value in 'Browser.element'
       flags: Pasta.version
     });
 
@@ -55,6 +56,7 @@
 
     Pasta.addActivityListener(function (activity) {
       console.log("Got some activity to send to Elm:", activity);
+      // This is send to a subscription in Elm, which is read from 'Browser.element'
       app.ports.activityChanges.send(activity);
     });
   </script>
