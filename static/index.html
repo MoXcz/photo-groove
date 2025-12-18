@@ -5,6 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>PhotoGroove</title>
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="range-slider.css" />
+    <script src="range-slider.js"></script>
+    <script>
+      class RangeSlider extends HTMLElement {
+        connectedCallback() {
+          let input = document.createElement("input");
+          this.appendChild(input);
+
+          let jsr = new JSR(input, {
+            max: this.max,
+            values: [this.val],
+            sliders: 1,
+            grid: false,
+          });
+
+          let rangeSliderNode = this;
+          jsr.addEventListener("update", function (elem, value) {
+            let event = new CustomEvent("slide", {
+              detail: { userSlidTo: value },
+            });
+
+            rangeSliderNode.dispatchEvent(event);
+          });
+        }
+      }
+
+      window.customElements.define("range-slider", RangeSlider);
+    </script>
   </head>
   <body>
     <div id="app"></div>
