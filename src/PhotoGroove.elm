@@ -27,6 +27,9 @@ initialCmd =
 port setFilters : FilterOptions -> Cmd msg
 
 
+port activityChanges : (String -> msg) -> Sub msg
+
+
 type alias FilterOptions =
     { url : String
     , filters : List { name : String, amount : Float }
@@ -60,6 +63,7 @@ type alias Model =
     , hue : Int
     , ripple : Int
     , noise : Int
+    , activity : String
     }
 
 
@@ -78,6 +82,7 @@ type Msg
     | SlidHue Int
     | SlidRipple Int
     | SlidNoise Int
+    | GotActivity String
 
 
 view : Model -> Html Msg
@@ -114,6 +119,7 @@ viewLoaded photos selectedUrl model =
     , button
         [ onClick ClickedSurpriseMe ]
         [ text "Surpise Me!" ]
+    , div [ class "activity" ] [ text model.activity ]
     , div [ class "filters" ]
         [ viewFilter SlidHue "Hue" model.hue
         , viewFilter SlidRipple "Ripple" model.ripple
@@ -182,6 +188,7 @@ initialModel =
     , hue = 5
     , ripple = 5
     , noise = 5
+    , activity = ""
     }
 
 
@@ -232,7 +239,7 @@ update msg model =
         -- pattern matching for Result value (either Ok or Err)
         GotPhotos (Ok photos) ->
             case photos of
-                first :: rest ->
+                _ :: _ ->
                     applyFilters
                         { model
                             | status =
@@ -259,6 +266,9 @@ update msg model =
         SlidNoise noise ->
             applyFilters { model | noise = noise }
 
+        GotActivity activity ->
+            ( { model | activity = activity }, Cmd.none )
+
 
 applyFilters : Model -> ( Model, Cmd msg )
 applyFilters model =
@@ -283,14 +293,23 @@ applyFilters model =
             ( model, Cmd.none )
 
 
-main : Program () Model Msg
+main : Program Float Model Msg
 main =
     Browser.element
-        { init = \_ -> ( initialModel, initialCmd )
+        { init = init
         , view = view
         , update = update
-        , subscriptions = \_ -> Sub.none
+        , subscriptions = \_ -> activityChanges GotActivity
         }
+
+
+init : Float -> ( Model, Cmd Msg )
+init flags =
+    let
+        activity =
+            "Initializing Pasta v" ++ String.fromFloat flags
+    in
+    ( { initialModel | activity = activity }, initialCmd )
 
 
 rangeSlider : List (Attribute msg) -> List (Html msg) -> Html msg
