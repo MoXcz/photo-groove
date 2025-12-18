@@ -1,45 +1,55 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>PhotoGroove</title>
-    <link rel="stylesheet" href="styles.css" />
-    <link rel="stylesheet" href="range-slider.css" />
-    <script src="range-slider.js"></script>
-    <script>
-      class RangeSlider extends HTMLElement {
-        connectedCallback() {
-          let input = document.createElement("input");
-          this.appendChild(input);
 
-          let jsr = new JSR(input, {
-            max: this.max,
-            values: [this.val],
-            sliders: 1,
-            grid: false,
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PhotoGroove</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="range-slider.css" />
+  <script src="range-slider.js"></script>
+  <script>
+    class RangeSlider extends HTMLElement {
+      connectedCallback() {
+        let input = document.createElement("input");
+        this.appendChild(input);
+
+        let jsr = new JSR(input, {
+          max: this.max,
+          values: [this.val],
+          sliders: 1,
+          grid: false,
+        });
+
+        let rangeSliderNode = this;
+        jsr.addEventListener("update", function (elem, value) {
+          let event = new CustomEvent("slide", {
+            detail: {userSlidTo: value},
           });
 
-          let rangeSliderNode = this;
-          jsr.addEventListener("update", function (elem, value) {
-            let event = new CustomEvent("slide", {
-              detail: { userSlidTo: value },
-            });
-
-            rangeSliderNode.dispatchEvent(event);
-          });
-        }
+          rangeSliderNode.dispatchEvent(event);
+        });
       }
+    }
 
-      window.customElements.define("range-slider", RangeSlider);
-    </script>
-  </head>
-  <body>
-    <div id="app"></div>
+    window.customElements.define("range-slider", RangeSlider);
+  </script>
+</head>
 
-    <script src="app.js"></script>
-    <script>
-      Elm.PhotoGroove.init({ node: document.getElementById("app") });
-    </script>
-  </body>
+<body>
+  <div id="app"></div>
+
+  <script src="pasta.js"></script>
+  <script src="app.js"></script>
+  <script>
+    let app = Elm.PhotoGroove.init({node: document.getElementById("app")});
+
+    app.ports.setFilters.subscribe(function (options) {
+      requestAnimationFrame(function () {
+        Pasta.apply(document.getElementById("main-canvas"), options);
+      });
+    });
+  </script>
+</body>
+
 </html>
