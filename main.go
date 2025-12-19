@@ -47,6 +47,86 @@ func (app *application) photos(w http.ResponseWriter, r *http.Request) {
 	app.respJSON(w, http.StatusOK, photos)
 }
 
+func (app *application) folders(w http.ResponseWriter, r *http.Request) {
+	folders := map[string]any{
+		"name":   "All Photos",
+		"photos": map[string]any{},
+		"subfolders": []any{
+			map[string]any{
+				"name":   "2016",
+				"photos": map[string]any{},
+				"subfolders": []any{
+					map[string]any{
+						"name": "Aloha",
+						"photos": map[string]any{
+							"2turtles": map[string]any{
+								"title": "Turtles & sandals",
+								"related_photos": []string{
+									"beach",
+								},
+								"size": 27,
+							},
+							"beach": map[string]any{
+								"title": "At Chang’s Beach",
+								"related_photos": []string{
+									"wake",
+									"2turtles",
+								},
+								"size": 36,
+							},
+							"wake": map[string]any{
+								"title": "First day on Maui",
+								"related_photos": []string{
+									"beach",
+								},
+								"size": 21,
+							},
+						},
+						"subfolders": []any{},
+					},
+					map[string]any{
+						"name": "Metal",
+						"photos": map[string]any{
+							"epica": map[string]any{
+								"title": "Simone Simons",
+								"related_photos": []string{
+									"Noora",
+									"Joakim",
+								},
+								"size": 20,
+							},
+							"Noora": map[string]any{
+								"title": "Noora Louhimo",
+								"related_photos": []string{
+									"epica",
+									"Joakim",
+								},
+								"size": 29,
+							},
+							"Joakim": map[string]any{
+								"title": "Joakim Brodén",
+								"related_photos": []string{
+									"Noora",
+									"epica",
+								},
+								"size": 29,
+							},
+						},
+						"subfolders": []any{},
+					},
+				},
+			},
+			map[string]any{
+				"name":       "2017",
+				"photos":     map[string]any{},
+				"subfolders": []any{},
+			},
+		},
+	}
+
+	app.respJSON(w, http.StatusOK, folders)
+}
+
 func (app *application) respJSON(w http.ResponseWriter, code int, jsonResp any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
@@ -64,6 +144,7 @@ func (app *application) routes() http.Handler {
 	mux.Handle("GET /", fs)
 
 	mux.HandleFunc("GET /photos/list", app.photos)
+	mux.HandleFunc("GET /folders/list", app.folders)
 
 	return mux
 }
