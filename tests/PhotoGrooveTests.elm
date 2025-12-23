@@ -5,7 +5,7 @@ import Fuzz exposing (Fuzzer, int, string)
 import Html.Attributes as Attr
 import Json.Decode exposing (decodeValue)
 import Json.Encode as Encode
-import PhotoGroove
+import PhotoGallery
     exposing
         ( Model
         , Msg(..)

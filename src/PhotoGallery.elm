@@ -1,4 +1,4 @@
-port module PhotoGroove exposing (Model, Msg(..), Status(..), initialModel, photoDecoder, photoFromUrl, update, urlPrefix, view)
+port module PhotoGallery exposing (Model, Msg(..), Status(..), init, initialModel, photoDecoder, photoFromUrl, subscriptions, update, urlPrefix, view)
 
 -- modules that interact with JS need to be marked with 'port'
 
@@ -123,8 +123,7 @@ viewFilter toMsg name magnitude =
 
 viewLoaded : List Photo -> String -> Model -> List (Html Msg)
 viewLoaded photos selectedUrl model =
-    [ h1 [] [ text "Photo Groove" ]
-    , button
+    [ button
         [ onClick ClickedSurpriseMe ]
         [ text "Surpise Me!" ]
     , div [ class "activity" ] [ text model.activity ]
@@ -310,8 +309,13 @@ main =
         , update = update
 
         -- subscriptions are values that Elm 'subscribes' to by reading changes
-        , subscriptions = \_ -> activityChanges GotActivity
+        , subscriptions = subscriptions
         }
+
+
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+    activityChanges GotActivity
 
 
 init : Float -> ( Model, Cmd Msg )
